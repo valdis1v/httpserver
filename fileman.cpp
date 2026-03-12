@@ -23,7 +23,7 @@ public:
         parse_dir();
     }
 
-    std::shared_ptr<char[]> get_ressource(const std::string& path)
+    std::shared_ptr<char[]> get_ressource(const std::string& path, int& len)
     {
         for (const auto& res : this->routes)
         {
