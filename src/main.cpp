@@ -1,3 +1,5 @@
+#include "fileman.h"
+#include "worker_man.h"
 #include <cstdlib>
 #include <iostream>
 #include <sys/socket.h>
@@ -31,6 +33,9 @@ int accept_loop(int PORT)
 
     sockaddr_in CLIENT_NEXT{};
     socklen_t CN_LEN = sizeof(CLIENT_NEXT);
+
+    FileManager FM("/web");
+    Worker_Manager WM;
 
     while(1)
     {
