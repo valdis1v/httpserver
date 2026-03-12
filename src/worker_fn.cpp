@@ -1,3 +1,5 @@
+// https://www.elektronik-kompendium.de/sites/net/0902231.htm
+
 
 #include <algorithm>
 #include <cstdio>
