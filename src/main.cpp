@@ -1,13 +1,45 @@
 #include <iostream>
+#include <string>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
+#include <vector>
 
-int accept_loop(int PORT);
+#include "setup.h"
+
+int accept_loop();
+
+int PORT = 4200;
+
+
+/**
+ * Arg1 Path
+ *
+ * -setup
+ * -run
+ *
+ */
+
+void match_args(int argc, char** argv)
+{
+    std::vector<std::string> arguments;
+    for(int i = 0; i < argc; i++)
+    {
+        arguments.push_back(std::string(argv[i]));
+    }
+    if(arguments[1] == "-setup") {
+        setup_dir();
+        setup_config();
+    }
+    if(arguments[1] == "-run") {
+        accept_loop();
+    }
+}
+
 
 int main(int argc, char** argv)
 {
-    accept_loop(4200);
+    match_args(argc, argv);
     return 0;
 }
 
@@ -15,7 +47,8 @@ int main(int argc, char** argv)
 
 
 
-int accept_loop(int PORT)
+
+int accept_loop()
 {
     int SOCKTCPIP4 = socket(AF_INET, SOCK_STREAM, 0);
 
