@@ -1,6 +1,3 @@
-#include "fileman.h"
-#include "worker_man.h"
-#include <cstdlib>
 #include <iostream>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -8,11 +5,15 @@
 
 int accept_loop(int PORT);
 
-int main()
+int main(int argc, char** argv)
 {
     accept_loop(4200);
     return 0;
 }
+
+
+
+
 
 int accept_loop(int PORT)
 {
@@ -33,9 +34,6 @@ int accept_loop(int PORT)
 
     sockaddr_in CLIENT_NEXT{};
     socklen_t CN_LEN = sizeof(CLIENT_NEXT);
-
-    FileManager FM("/web");
-    Worker_Manager WM;
 
     while(1)
     {
