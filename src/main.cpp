@@ -1,10 +1,13 @@
 #include <iostream>
+#include <ostream>
 #include <string>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
 #include <vector>
 
+#include "http_def.h"
+#include "res_man.h"
 #include "setup.h"
 
 int accept_loop();
@@ -67,16 +70,26 @@ int accept_loop()
 
     sockaddr_in CLIENT_NEXT{};
     socklen_t CN_LEN = sizeof(CLIENT_NEXT);
-
+    Ressource_Manager_Config config;
+    config.serve_path = "site";
+    Ressource_Manager res_man(config);
     while(1)
     {
         int new_confd = accept(SOCKTCPIP4, (sockaddr*)&CLIENT_NEXT, &CN_LEN);
-        if (new_confd < 0)
+        if (new_confd > 0)
         {
-            perror("accept");
-            exit(1);
+            char buffer[4096];
+            int len = read(new_confd, buffer, sizeof(buffer) - 1);
+            buffer[len] = '\0';
+            HttpRequest req = HttpRequest::from(buffer);
+            std::cout << "New Request: " << req.method << " " << req.path << std::endl;
+            auto ressource = res_man.request_or_fallback(req.path);
+            std::cout << ressource << std::endl;
+            HttpResponse resp = HttpResponse::OK(Html, std::string(ressource));
+            auto out = resp.into_writable();
+            write(new_confd, out.data(), out.size());
+            close(new_confd);
         }
 
-        std::cout << "Client connected\n";
     }
 }
