@@ -28,7 +28,7 @@ std::shared_mutex lock_images;
 std::unordered_map<std::string, std::string>  media_map;
 std::shared_mutex lock_media;
 
-std::map<std::string, std::string> error_map;
+std::unordered_map<std::string, std::string> error_map;
 std::shared_mutex lock_error;
 
     void init_match_all();

@@ -59,6 +59,9 @@ int accept_loop()
     BIND_SOCK.sin_family = AF_INET;
     BIND_SOCK.sin_port = htons(PORT);
     BIND_SOCK.sin_addr.s_addr = htonl(INADDR_ANY);
+    int opt = 1;
+    // schneller.
+    setsockopt(SOCKTCPIP4, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
 
     if(bind(SOCKTCPIP4, (sockaddr*)&BIND_SOCK, sizeof(BIND_SOCK)) != 0)
     {
@@ -90,6 +93,5 @@ int accept_loop()
             write(new_confd, out.data(), out.size());
             close(new_confd);
         }
-
     }
 }
