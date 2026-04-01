@@ -9,6 +9,7 @@
 #include "http_def.h"
 #include "res_man.h"
 #include "setup.h"
+#include "logger.h"
 
 int accept_loop();
 
@@ -46,11 +47,6 @@ int main(int argc, char** argv)
     return 0;
 }
 
-
-
-
-
-
 int accept_loop()
 {
     int SOCKTCPIP4 = socket(AF_INET, SOCK_STREAM, 0);
@@ -85,9 +81,9 @@ int accept_loop()
             int len = read(new_confd, buffer, sizeof(buffer) - 1);
             buffer[len] = '\0';
             HttpRequest req = HttpRequest::from(buffer);
-            std::cout << "New Request: " << req.method << " " << req.path << std::endl;
+            std::string msg = "New Request: " + req.path;
+            log(msg, 1);
             auto ressource = res_man.request_or_fallback(req.path);
-            std::cout << ressource << std::endl;
             HttpResponse resp = HttpResponse::OK(Html, std::string(ressource));
             auto out = resp.into_writable();
             write(new_confd, out.data(), out.size());
