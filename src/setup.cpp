@@ -1,7 +1,7 @@
 
 #include <filesystem>
 #include <fstream>
-#include <iostream>
+#include "logger.h"
 namespace fs = std::filesystem;
 
 
@@ -22,10 +22,11 @@ void setup_dir()
     {
         fs::create_directories("site/browser");
         fs::create_directories("site/error");
-        std::cout << "Created Server directories\n";
+        write_log("Created Server directories", 1);
     } catch (fs::filesystem_error& e)
     {
-        std::cerr << "Failed to setup directory:\n " << e.what() << "\n";
+        std::string msg = std::string("Failed to setup directory:\t") + e.what();
+        write_log(msg, 3);
     }
 }
 
@@ -39,6 +40,6 @@ void setup_config()
         configfile << "host = localhost\n";
         configfile << "port = 4200\n";
         configfile.close();
-        std::cout << "Created default configuration\n";
+        write_log("Created default configuration", 1);
     }
 }

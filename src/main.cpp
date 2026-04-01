@@ -1,5 +1,3 @@
-#include <iostream>
-#include <ostream>
 #include <string>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -82,7 +80,7 @@ int accept_loop()
             buffer[len] = '\0';
             HttpRequest req = HttpRequest::from(buffer);
             std::string msg = "New Request: " + req.path;
-            log(msg, 1);
+            write_log(msg, 1);
             auto ressource = res_man.request_or_fallback(req.path);
             HttpResponse resp = HttpResponse::OK(Html, std::string(ressource));
             auto out = resp.into_writable();

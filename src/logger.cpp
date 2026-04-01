@@ -20,7 +20,7 @@ static std::mutex lock_q;
  * 2 Warnung
  * 3 Fehler
  */
-void log(const char* msg, int sev) noexcept {
+void write_log(const char* msg, int sev) noexcept {
     const char* b = reset_c;
     switch(sev) {
         case 0:
@@ -44,7 +44,8 @@ void log(const char* msg, int sev) noexcept {
     write(1, reset_c "\n", 5);
 }
 
-void log(const std::string msg, int sev) noexcept {
+
+void write_log(const std::string msg, int sev) noexcept {
     const char* b = reset_c;
     int blen = 0;
     switch(sev) {
