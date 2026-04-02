@@ -1,4 +1,3 @@
-#include <stdexcept>
 #include <string>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -9,6 +8,7 @@
 #include "res_man.h"
 #include "setup.h"
 #include "logger.h"
+#include "worker_man.h"
 
 int accept_loop();
 
@@ -71,6 +71,7 @@ int accept_loop()
     Ressource_Manager_Config config;
     config.serve_path = "site";
     Ressource_Manager res_man(config);
+    Worker_Manager worker_man(res_man, true);
     while(1)
     {
         int new_confd = accept(SOCKTCPIP4, (sockaddr*)&CLIENT_NEXT, &CN_LEN);
@@ -79,20 +80,10 @@ int accept_loop()
             char buffer[4096];
             int len = read(new_confd, buffer, sizeof(buffer) - 1);
             buffer[len] = '\0';
-            write_log(buffer, 1);
             HttpRequest req;
-            try {
-                req = HttpRequest::from(buffer);
-            } catch(std::invalid_argument e) {
-               write(new_confd, "Hurensohn", 10);
-            };
+            req = HttpRequest::from(buffer);
             std::string msg = "New Request: " + req.path;
-            write_log(msg, 1);
-            auto ressource = res_man.request_or_fallback(req.path);
-            HttpResponse resp = HttpResponse::OK(Html, std::string(ressource));
-            auto out = resp.into_writable();
-            write(new_confd, out.data(), out.size());
-            close(new_confd);
+            worker_man.push_job(req, new_confd);
         }
     }
 }
