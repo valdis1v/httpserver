@@ -44,8 +44,8 @@ std::string_view Ressource_Manager::request_or_fallback(const std::string& path)
     if(it != ressource_map.end())
         return it->second;
 
-    auto f_it = ressource_map.find("404.html");
-    if(f_it != ressource_map.end())
+    auto f_it = error_map.find("404.html");
+    if(f_it != error_map.end())
         return f_it->second;
 
     return {};

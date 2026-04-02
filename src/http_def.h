@@ -10,6 +10,8 @@ enum ContentType { All, Html, Script, Json, Css };
 
 Method method_from(std::string_view val);
 std::string contenttype_into(ContentType type);
+ContentType contenttype_from(const std::string& path);
+ContentType contenttype_from_string(const std::string_view& filetype);
 
 class HttpResponse
 {
@@ -18,6 +20,7 @@ public:
     std::string content_type;
     size_t content_length;
     std::string body;
+    std::string charset = "utf-8";
 
     static HttpResponse OK(
         ContentType Type,

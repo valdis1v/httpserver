@@ -2,7 +2,9 @@
 
 #include <sstream>
 #include <stdexcept>
+#include <string>
 #include <string_view>
+#include "logger.h"
 
 Method method_from(std::string_view val)
 {
@@ -17,12 +19,36 @@ Method method_from(std::string_view val)
 std::string contenttype_into(ContentType type)
 {
     if(type == Html)   return "text/html";
-    if(type == Script) return "text/javascript";
+    if(type == Script) return "application/javascript";
     if(type == Css)    return "text/css";
     if(type == Json)   return "application/json";
 
     return "*/*";
 }
+
+ContentType contenttype_from_string(const std::string_view& filetype) {
+    if(filetype == ".html") return Html;
+    if(filetype == ".js") return Script;
+    if(filetype == ".css") return Css;
+    if(filetype == ".json") return Json;
+
+    return Html;
+}
+
+ContentType contenttype_from(const std::string& path) {
+    auto indexof = path.find(".");
+    if(indexof != std::string::npos)
+    {
+        auto b = path.substr(indexof, path.size());
+        write_log(b, 3);
+        return contenttype_from_string(b);
+    } else {
+        write_log(std::string("Failed to parse type for: ") + path, 2);
+        write_log("Returning html", 2);
+        return Html;
+    }
+}
+
 
 HttpResponse HttpResponse::OK(ContentType Type, std::string content)
 {
@@ -60,7 +86,8 @@ std::string HttpResponse::into_writable()
 
     stream1 << status << "\r\n";
     stream1 << "Content-Length: " << content_length << "\r\n";
-    stream1 << "Content-Type: " << content_type << "\r\n";
+    stream1 << "Content-Type: " << content_type << ";";
+    stream1 << "charset=" << charset << "\r\n";
     stream1 << "\r\n";
     stream1 << body;
 

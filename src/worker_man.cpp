@@ -3,7 +3,9 @@
 #include "http_def.h"
 #include "logger.h"
 #include "res_man.h"
+#include <algorithm>
 #include <atomic>
+#include <iostream>
 #include <queue>
 #include <sstream>
 #include <thread>
@@ -57,13 +59,29 @@ void Worker_Manager::thread_job() {
             jobs.pop();
         }
         try  {
-            write_log(std::string("Thread ") + id + " : " + std::string("Sending response:\t") + job.request.path, 1);
-            auto ressource = manager.request_or_fallback(job.request.path);
-            HttpResponse response = HttpResponse::OK(Html, std::string(ressource));
+            write_log(std::string("Thread ") + id + "\n\t" + std::string("Sending response: ") + job.request.path, 1);
+            auto res = manager.request_ressource(job.request.path);
+            auto type = contenttype_from(job.request.path);
+            HttpResponse response;
+            if(res.empty()) {
+                if(type == Html) {
+                    res = manager.request_error_page("404");
+                } else {
+                    res = "";
+                }
+                response = HttpResponse::NotFound(type, std::string(res));
+                write_log(response.into_writable(), 2);
+            } else {
+                response = HttpResponse::OK(type, std::string(res));
+                write_log(response.into_writable(), 2);
+            }
             auto out = response.into_writable();
             write(job.connection_fd, out.data(), out.size());
             close(job.connection_fd);
         } catch (...) {
+            auto res = manager.request_error_page("500");
+            HttpResponse response = HttpResponse::IntServerError(Html, std::string(res));
+            write(job.connection_fd, response.into_writable().data(), response.into_writable().size());
             if(verbose) {
                 write_log(
                     std::string("Failed to handle request: ")
