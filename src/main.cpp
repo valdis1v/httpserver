@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <vector>
 
+#include "config.h"
 #include "http_def.h"
 #include "res_man.h"
 #include "setup.h"
@@ -48,11 +49,19 @@ int main(int argc, char** argv)
 
 int accept_loop()
 {
+    // LOAD USER CONFIG
+    SERVERCONFIG server_config = parse_configfile();
+    Ressource_Manager_Config config;
+    config.serve_path = server_config.site_dir;
+
+    Ressource_Manager res_man(config);
+    Worker_Manager worker_man(res_man, true);
+
     int SOCKTCPIP4 = socket(AF_INET, SOCK_STREAM, 0);
 
     sockaddr_in BIND_SOCK{};
     BIND_SOCK.sin_family = AF_INET;
-    BIND_SOCK.sin_port = htons(PORT);
+    BIND_SOCK.sin_port = htons(server_config.port);
     BIND_SOCK.sin_addr.s_addr = htonl(INADDR_ANY);
     int opt = 1;
     // schneller.
@@ -68,10 +77,7 @@ int accept_loop()
 
     sockaddr_in CLIENT_NEXT{};
     socklen_t CN_LEN = sizeof(CLIENT_NEXT);
-    Ressource_Manager_Config config;
-    config.serve_path = "site";
-    Ressource_Manager res_man(config);
-    Worker_Manager worker_man(res_man, true);
+
     while(1)
     {
         int new_confd = accept(SOCKTCPIP4, (sockaddr*)&CLIENT_NEXT, &CN_LEN);

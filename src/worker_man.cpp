@@ -1,17 +1,12 @@
-
-
 #include "http_def.h"
 #include "logger.h"
 #include "res_man.h"
-#include <algorithm>
 #include <atomic>
-#include <iostream>
 #include <queue>
 #include <sstream>
 #include <thread>
 #include <unistd.h>
 #include <vector>
-
 #include "worker_man.h"
 
 Worker_Manager::Worker_Manager(Ressource_Manager& man, bool verbose): manager(man), verbose(verbose) {

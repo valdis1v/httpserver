@@ -32,13 +32,14 @@ void setup_dir()
 
 void setup_config()
 {
-    if(!fs::exists("site/config.toml"))
+    if(!fs::exists("site/.conf"))
     {
-        std::ofstream configfile("site/config.toml");
+        std::ofstream configfile("site/.conf");
         configfile << "#SERVERCONFIG \n";
-        configfile << "[server]\n";
-        configfile << "host = localhost\n";
-        configfile << "port = 4200\n";
+        configfile << "\n";
+        configfile << "host=localhost\n";
+        configfile << "port=4200\n";
+        configfile << "site_dir=site\n";
         configfile.close();
         write_log("Created default configuration", 1);
     }
