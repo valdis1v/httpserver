@@ -1,3 +1,4 @@
+#include <stdexcept>
 #include <string>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -78,7 +79,13 @@ int accept_loop()
             char buffer[4096];
             int len = read(new_confd, buffer, sizeof(buffer) - 1);
             buffer[len] = '\0';
-            HttpRequest req = HttpRequest::from(buffer);
+            write_log(buffer, 1);
+            HttpRequest req;
+            try {
+                req = HttpRequest::from(buffer);
+            } catch(std::invalid_argument e) {
+               write(new_confd, "Hurensohn", 10);
+            };
             std::string msg = "New Request: " + req.path;
             write_log(msg, 1);
             auto ressource = res_man.request_or_fallback(req.path);

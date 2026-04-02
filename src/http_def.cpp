@@ -1,6 +1,7 @@
 #include "http_def.h"
 
 #include <sstream>
+#include <stdexcept>
 #include <string_view>
 
 Method method_from(std::string_view val)
@@ -79,9 +80,9 @@ HttpRequest HttpRequest::from(const char* buffer)
     auto method_i = line1.find(' ');
     auto path_i = line1.find(' ', method_i + 1);
 
-    if(method_i == std::string_view::npos || path_i == std::string_view::npos)
-        return request;
-
+    if(method_i == std::string_view::npos || path_i == std::string_view::npos) {
+        throw std::invalid_argument("Test");
+    }
     std::string_view method  = line1.substr(0, method_i);
     std::string_view path    = line1.substr(method_i + 1, path_i - method_i - 1);
     std::string_view version = line1.substr(path_i + 1);
