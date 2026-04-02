@@ -27,9 +27,9 @@ class Worker_Manager {
 
     std::vector<std::thread> workers;
 
+    Ressource_Manager& manager;
     bool verbose;
     std::atomic_bool RUNNING = true;
-    Ressource_Manager& manager;
 
     public:
     explicit Worker_Manager(Ressource_Manager& man, bool verbose);
