@@ -15,7 +15,6 @@
 #include <vector>
 
 struct Request_Wrapper {
-    HttpRequest request;
     int connection_fd;
 };
 
@@ -34,7 +33,7 @@ class Worker_Manager {
     public:
     explicit Worker_Manager(Ressource_Manager& man, bool verbose);
     ~Worker_Manager();
-    void push_job(HttpRequest req, int fd) noexcept;
+    void push_job(int fd) noexcept;
     void thread_job();
 
 

@@ -5,7 +5,6 @@
 #include <vector>
 
 #include "config.h"
-#include "http_def.h"
 #include "res_man.h"
 #include "setup.h"
 #include "logger.h"
@@ -83,13 +82,7 @@ int accept_loop()
         int new_confd = accept(SOCKTCPIP4, (sockaddr*)&CLIENT_NEXT, &CN_LEN);
         if (new_confd > 0)
         {
-            char buffer[4096];
-            int len = read(new_confd, buffer, sizeof(buffer) - 1);
-            buffer[len] = '\0';
-            HttpRequest req;
-            req = HttpRequest::from(buffer);
-            std::string msg = "New Request: " + req.path;
-            worker_man.push_job(req, new_confd);
+            worker_man.push_job(new_confd);
         }
     }
 }

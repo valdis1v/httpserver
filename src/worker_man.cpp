@@ -28,10 +28,10 @@ Worker_Manager::~Worker_Manager() {
     }
 }
 
-void Worker_Manager::push_job(HttpRequest req, int fd) noexcept {
+void Worker_Manager::push_job(int fd) noexcept {
     {
         std::lock_guard<std::mutex> lockdown(lock_q);
-        this->jobs.push({req, fd});
+        this->jobs.push({fd});
     }
     cv_wait_jobs.notify_one();
 }
@@ -40,7 +40,7 @@ void Worker_Manager::thread_job() {
     if(verbose) {
         write_log("Started thread", 1);
     }
-    while(RUNNING) {
+    while(true) {
         Request_Wrapper job;
         std::stringstream stream;
         stream << std::this_thread::get_id();
@@ -48,15 +48,25 @@ void Worker_Manager::thread_job() {
         {
             std::unique_lock<std::mutex> lock(lock_q);
             cv_wait_jobs.wait(lock, [this] {
-                return !jobs.empty();
+                return !jobs.empty() || !RUNNING;
             });
+            if(!RUNNING && jobs.empty()) break;
             job = std::move(jobs.front());
             jobs.pop();
         }
         try  {
-            write_log(std::string("Thread ") + id + "\n\t" + std::string("Sending response: ") + job.request.path, 1);
-            auto res = manager.request_ressource(job.request.path);
-            auto type = contenttype_from(job.request.path);
+            char buffer[4096];
+            int len = read(job.connection_fd, buffer, sizeof(buffer) - 1);
+            if(len <= 0) {
+                close(job.connection_fd);
+                continue;
+            }
+            buffer[len] = '\0';
+            HttpRequest req = HttpRequest::from(buffer);
+
+            write_log(std::string("Thread ") + id + "\n\t" + std::string("Sending response: ") + req.path, 1);
+            auto res = manager.request_ressource(req.path);
+            auto type = contenttype_from(req.path);
             HttpResponse response;
             if(res.empty()) {
                 if(type == Html) {
@@ -65,10 +75,8 @@ void Worker_Manager::thread_job() {
                     res = "";
                 }
                 response = HttpResponse::NotFound(type, std::string(res));
-                write_log(response.into_writable(), 2);
             } else {
                 response = HttpResponse::OK(type, std::string(res));
-                write_log(response.into_writable(), 2);
             }
             auto out = response.into_writable();
             write(job.connection_fd, out.data(), out.size());
@@ -80,14 +88,10 @@ void Worker_Manager::thread_job() {
             if(verbose) {
                 write_log(
                     std::string("Failed to handle request: ")
-                    + job.request.path
                     , 3
                 );
             }
-            if(close(job.connection_fd) == 0) {
-                if(verbose)
-                write_log("Failed to close connection", 3);
-            }
+            close(job.connection_fd);
         }
     }
 }
